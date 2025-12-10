@@ -10,7 +10,7 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 # Import views separated
-from .login import mostrar_login as mostrar_login_view
+from .login import mostrar_login as mostrar_login_view, mostrar_registro as mostrar_registro_view
 from .components import crear_boton_menu, crear_boton_admin, crear_stat_card
 from . import admin as admin_module
 # Importar la vista de notificaciones del cliente (reutilizar implementación)
@@ -52,184 +52,12 @@ class GymApp(ctk.CTk):
             widget.destroy()
 
     def mostrar_login(self):
-        """Muestra la pantalla de inicio de sesión"""
-        self.limpiar_ventana()
-
-        # Frame principal
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.pack(expand=True, fill="both", padx=40, pady=40)
-
-        # Logo y título
-        titulo = ctk.CTkLabel(
-            frame,
-            text="🏋️ GymForTheMoment",
-            font=ctk.CTkFont(size=40, weight="bold")
-        )
-        titulo.pack(pady=(0, 10))
-
-        subtitulo = ctk.CTkLabel(
-            frame,
-            text="Sistema de Gestión de Gimnasio 24/7",
-            font=ctk.CTkFont(size=16)
-        )
-        subtitulo.pack(pady=(0, 40))
-
-        # Frame de login
-        login_frame = ctk.CTkFrame(frame, width=400)
-        login_frame.pack(pady=20)
-
-        ctk.CTkLabel(
-            login_frame,
-            text="Iniciar Sesión",
-            font=ctk.CTkFont(size=24, weight="bold")
-        ).pack(pady=(30, 20))
-
-        # Campos de entrada
-        dni_entry = ctk.CTkEntry(
-            login_frame,
-            placeholder_text="DNI",
-            width=300,
-            height=40,
-            font=ctk.CTkFont(size=14)
-        )
-        dni_entry.pack(pady=10, padx=40)
-
-        password_entry = ctk.CTkEntry(
-            login_frame,
-            placeholder_text="Contraseña",
-            show="*",
-            width=300,
-            height=40,
-            font=ctk.CTkFont(size=14)
-        )
-        password_entry.pack(pady=10, padx=40)
-
-        # Botón de login
-        def login():
-            dni = dni_entry.get()
-            password = password_entry.get()
-
-            exito, mensaje, usuario = self.controller.login(dni, password)
-
-            if exito:
-                if self.controller.es_admin():
-                    self.mostrar_dashboard_admin()
-                else:
-                    self.mostrar_dashboard_cliente()
-            else:
-                messagebox.showerror("Error", mensaje)
-
-        btn_login = ctk.CTkButton(
-            login_frame,
-            text="Ingresar",
-            command=login,
-            width=300,
-            height=40,
-            font=ctk.CTkFont(size=14, weight="bold")
-        )
-        btn_login.pack(pady=20, padx=40)
-
-        # Botón de registro
-        btn_registro = ctk.CTkButton(
-            login_frame,
-            text="Crear Cuenta Nueva",
-            command=self.mostrar_registro,
-            width=300,
-            height=40,
-            font=ctk.CTkFont(size=14),
-            fg_color="transparent",
-            border_width=2
-        )
-        btn_registro.pack(pady=(0, 30), padx=40)
-
-        # Info de acceso admin
-        info = ctk.CTkLabel(
-            frame,
-            text="👤 Admin: DNI: admin123 | Contraseña: admin123",
-            font=ctk.CTkFont(size=12),
-            text_color="gray"
-        )
-        info.pack(pady=20)
-
-        # Bind Enter key
-        password_entry.bind("<Return>", lambda e: login())
+        """Muestra la pantalla de inicio de sesión (usa la versión mejorada de login.py)"""
+        mostrar_login_view(self)
 
     def mostrar_registro(self):
-        """Muestra la pantalla de registro"""
-        self.limpiar_ventana()
-
-        frame = ctk.CTkFrame(self, fg_color="transparent")
-        frame.pack(expand=True, fill="both", padx=40, pady=40)
-
-        # Título
-        ctk.CTkLabel(
-            frame,
-            text="Crear Cuenta Nueva",
-            font=ctk.CTkFont(size=32, weight="bold")
-        ).pack(pady=(0, 30))
-
-        # Frame de registro
-        reg_frame = ctk.CTkFrame(frame, width=500)
-        reg_frame.pack(pady=20)
-
-        # Campos
-        nombre_entry = ctk.CTkEntry(reg_frame, placeholder_text="Nombre *", width=400, height=40)
-        nombre_entry.pack(pady=10, padx=40)
-
-        apellido_entry = ctk.CTkEntry(reg_frame, placeholder_text="Apellido *", width=400, height=40)
-        apellido_entry.pack(pady=10, padx=40)
-
-        dni_entry = ctk.CTkEntry(reg_frame, placeholder_text="DNI *", width=400, height=40)
-        dni_entry.pack(pady=10, padx=40)
-
-        telefono_entry = ctk.CTkEntry(reg_frame, placeholder_text="Teléfono", width=400, height=40)
-        telefono_entry.pack(pady=10, padx=40)
-
-        email_entry = ctk.CTkEntry(reg_frame, placeholder_text="Email", width=400, height=40)
-        email_entry.pack(pady=10, padx=40)
-
-        password_entry = ctk.CTkEntry(reg_frame, placeholder_text="Contraseña *", show="*", width=400, height=40)
-        password_entry.pack(pady=10, padx=40)
-
-        # Botones
-        def registrar():
-            exito, mensaje = self.controller.registrar_usuario(
-                nombre_entry.get(),
-                apellido_entry.get(),
-                dni_entry.get(),
-                telefono_entry.get(),
-                email_entry.get(),
-                password_entry.get()
-            )
-
-            if exito:
-                messagebox.showinfo("Éxito", mensaje)
-                self.mostrar_login()
-            else:
-                messagebox.showerror("Error", mensaje)
-
-        btn_frame = ctk.CTkFrame(reg_frame, fg_color="transparent")
-        btn_frame.pack(pady=30, padx=40)
-
-        ctk.CTkButton(
-            btn_frame,
-            text="Registrarse",
-            command=registrar,
-            width=190,
-            height=40,
-            font=ctk.CTkFont(size=14, weight="bold")
-        ).pack(side="left", padx=5)
-
-        ctk.CTkButton(
-            btn_frame,
-            text="Volver",
-            command=self.mostrar_login,
-            width=190,
-            height=40,
-            font=ctk.CTkFont(size=14),
-            fg_color="gray",
-            hover_color="darkgray"
-        ).pack(side="left", padx=5)
+        """Muestra la pantalla de registro (usa la versión mejorada de login.py)"""
+        mostrar_registro_view(self)
 
     def mostrar_dashboard_cliente(self):
         """Muestra el dashboard del cliente"""
