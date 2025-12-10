@@ -4,81 +4,747 @@ from typing import Any
 
 
 def mostrar_dashboard_cliente(app: Any):
-    """Muestra el dashboard del cliente"""
+    """Muestra el dashboard del cliente con diseño mejorado"""
     print("[DEBUG] mostrar_dashboard_cliente() ejecutado")
     app.limpiar_ventana()
+    app.configure(fg_color="#0a0e27")
 
     # Frame principal
-    main_frame = ctk.CTkFrame(app, fg_color="transparent")
+    main_frame = ctk.CTkFrame(app, fg_color="#0a0e27")
     main_frame.pack(fill="both", expand=True)
 
-    # Sidebar
-    sidebar = ctk.CTkFrame(main_frame, width=250, corner_radius=0)
+    # Sidebar mejorado
+    sidebar = ctk.CTkFrame(main_frame, width=280, fg_color="#1a1f3a", corner_radius=0)
     sidebar.pack(side="left", fill="y")
     sidebar.pack_propagate(False)
 
-    # Usuario info
+    # Usuario info mejorado
     usuario = app.controller.usuario_actual
-    user_frame = ctk.CTkFrame(sidebar)
-    user_frame.pack(pady=20, padx=20, fill="x")
+    user_frame = ctk.CTkFrame(sidebar, fg_color="transparent")
+    user_frame.pack(pady=30, padx=20, fill="x")
 
     ctk.CTkLabel(
         user_frame,
-        text=f"👤 {usuario['nombre']} {usuario['apellido']}",
-        font=ctk.CTkFont(size=14, weight="bold")
-    ).pack(pady=10)
+        text="👤 Perfil",
+        font=ctk.CTkFont(size=11, weight="bold"),
+        text_color="#00d4ff"
+    ).pack(anchor="w", pady=(0, 10))
+
+    ctk.CTkLabel(
+        user_frame,
+        text=f"{usuario['nombre']} {usuario['apellido']}",
+        font=ctk.CTkFont(size=13, weight="bold"),
+        text_color="#ffffff"
+    ).pack(anchor="w")
 
     ctk.CTkLabel(
         user_frame,
         text=f"DNI: {usuario['dni']}",
-        font=ctk.CTkFont(size=12),
-        text_color="gray"
-    ).pack()
+        font=ctk.CTkFont(size=11),
+        text_color="#7a8492"
+    ).pack(anchor="w", pady=(5, 0))
+
+    # Separador
+    ctk.CTkFrame(sidebar, fg_color="#2a2f4a", height=1).pack(fill="x", padx=20, pady=20)
 
     # Menú
     menu_frame = ctk.CTkFrame(sidebar, fg_color="transparent")
-    menu_frame.pack(fill="both", expand=True, pady=20)
+    menu_frame.pack(fill="both", expand=True, padx=15, pady=0)
 
     from .components import crear_boton_menu
 
-    # Botón destacado visible para Notificaciones (temporal)
-    btn_notif_visible = ctk.CTkButton(
-        sidebar,
-        text="🔔 NOTIFICACIONES",
-        command=lambda: mostrar_contenido_cliente(app, "notificaciones"),
-        width=210,
-        height=45,
-        font=ctk.CTkFont(size=14, weight="bold"),
-        fg_color="#2dbe60",
-        hover_color="#28a754"
-    )
-    btn_notif_visible.pack(pady=(10, 6), padx=20)
-
-    crear_boton_menu(menu_frame, "Hacer Reserva", lambda: mostrar_contenido_cliente(app, "reservar"), "📅")
+    crear_boton_menu(menu_frame, "Inicio", lambda: mostrar_contenido_cliente(app, "inicio"), "🏠")
+    crear_boton_menu(menu_frame, "Nueva Reserva", lambda: mostrar_contenido_cliente(app, "reservar"), "📅")
     crear_boton_menu(menu_frame, "Mis Reservas", lambda: mostrar_contenido_cliente(app, "mis_reservas"), "📋")
-    print("[DEBUG] Agregando boton: Notificaciones")
     crear_boton_menu(menu_frame, "Notificaciones", lambda: mostrar_contenido_cliente(app, "notificaciones"), "🔔")
-    print("[DEBUG] Boton Notificaciones creado en el código")
     crear_boton_menu(menu_frame, "Mis Pagos", lambda: mostrar_contenido_cliente(app, "pagos"), "💳")
-    crear_boton_menu(menu_frame, "Ver Horarios", lambda: mostrar_contenido_cliente(app, "horarios"), "🕐")
+    crear_boton_menu(menu_frame, "Horarios", lambda: mostrar_contenido_cliente(app, "horarios"), "🕐")
 
-    # Botón cerrar sesión
+    # Botón cerrar sesión mejorado
     ctk.CTkButton(
         sidebar,
         text="🚪 Cerrar Sesión",
         command=app.cerrar_sesion,
-        width=210,
-        height=40,
-        fg_color="red",
-        hover_color="darkred"
-    ).pack(side="bottom", pady=20, padx=20)
+        width=240,
+        height=45,
+        font=ctk.CTkFont(size=13, weight="bold"),
+        fg_color="#c41e3a",
+        hover_color="#a01830",
+        corner_radius=10
+    ).pack(side="bottom", pady=20, padx=15)
 
     # Contenido
-    app.content_frame = ctk.CTkFrame(main_frame)
-    app.content_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
+    app.content_frame = ctk.CTkFrame(main_frame, fg_color="#0a0e27")
+    app.content_frame.pack(side="right", fill="both", expand=True, padx=30, pady=30)
 
     # Mostrar inicio
     mostrar_contenido_cliente(app, "inicio")
+
+
+def mostrar_contenido_cliente(app: Any, seccion: str):
+    """Muestra el contenido según la sección seleccionada"""
+    for widget in app.content_frame.winfo_children():
+        widget.destroy()
+
+    if seccion == "inicio":
+        contenido_inicio_cliente(app)
+    elif seccion == "reservar":
+        contenido_reservar(app)
+    elif seccion == "mis_reservas":
+        contenido_mis_reservas(app)
+    elif seccion == "notificaciones":
+        contenido_notificaciones(app)
+    elif seccion == "pagos":
+        contenido_pagos(app)
+    elif seccion == "horarios":
+        contenido_horarios(app)
+
+
+def contenido_inicio_cliente(app: Any):
+    """Dashboard de inicio con tarjetas mejoradas"""
+    # Título
+    titulo_frame = ctk.CTkFrame(app.content_frame, fg_color="transparent")
+    titulo_frame.pack(fill="x", pady=(0, 30))
+
+    ctk.CTkLabel(
+        titulo_frame,
+        text="💪 Bienvenido a GymForTheMoment",
+        font=ctk.CTkFont(size=32, weight="bold"),
+        text_color="#00d4ff"
+    ).pack(anchor="w")
+
+    ctk.CTkLabel(
+        titulo_frame,
+        text="Tu gimnasio 24/7 · Acceso ilimitado a equipamiento",
+        font=ctk.CTkFont(size=13),
+        text_color="#7a8492"
+    ).pack(anchor="w", pady=(5, 0))
+
+    # Obtener datos
+    mis_reservas = app.controller.obtener_mis_reservas()
+    mis_recibos = app.controller.obtener_mis_recibos_pendientes()
+
+    # Tarjetas de información
+    cards_frame = ctk.CTkFrame(app.content_frame, fg_color="transparent")
+    cards_frame.pack(fill="x", pady=(0, 30))
+
+    # Tarjeta 1: Reservas
+    card1 = ctk.CTkFrame(
+        cards_frame,
+        fg_color="#1a1f3a",
+        corner_radius=15,
+        border_width=2,
+        border_color="#00d4ff"
+    )
+    card1.pack(side="left", fill="both", expand=True, padx=(0, 15))
+
+    ctk.CTkLabel(card1, text="📅", font=ctk.CTkFont(size=56)).pack(pady=(25, 10))
+    ctk.CTkLabel(
+        card1,
+        text=f"{len(mis_reservas)}",
+        font=ctk.CTkFont(size=48, weight="bold"),
+        text_color="#00d4ff"
+    ).pack()
+    ctk.CTkLabel(
+        card1,
+        text="Reservas Activas",
+        font=ctk.CTkFont(size=14),
+        text_color="#b0b8c1"
+    ).pack(pady=(5, 25))
+
+    # Tarjeta 2: Pagos
+    card2_color = "#c41e3a" if len(mis_recibos) > 0 else "#2dbe60"
+    card2 = ctk.CTkFrame(
+        cards_frame,
+        fg_color="#1a1f3a",
+        corner_radius=15,
+        border_width=2,
+        border_color=card2_color
+    )
+    card2.pack(side="left", fill="both", expand=True)
+
+    ctk.CTkLabel(card2, text="💳", font=ctk.CTkFont(size=56)).pack(pady=(25, 10))
+    ctk.CTkLabel(
+        card2,
+        text=f"{len(mis_recibos)}",
+        font=ctk.CTkFont(size=48, weight="bold"),
+        text_color=card2_color
+    ).pack()
+    ctk.CTkLabel(
+        card2,
+        text="Pagos Pendientes",
+        font=ctk.CTkFont(size=14),
+        text_color="#b0b8c1"
+    ).pack(pady=(5, 25))
+
+    # Botones de acción rápida
+    action_frame = ctk.CTkFrame(app.content_frame, fg_color="transparent")
+    action_frame.pack(fill="x", pady=(0, 20))
+
+    ctk.CTkButton(
+        action_frame,
+        text="📅 Nueva Reserva",
+        command=lambda: mostrar_contenido_cliente(app, "reservar"),
+        width=200,
+        height=50,
+        font=ctk.CTkFont(size=14, weight="bold"),
+        fg_color="#00d4ff",
+        text_color="#0a0e27",
+        hover_color="#00b8d4",
+        corner_radius=10
+    ).pack(side="left", padx=(0, 15))
+
+    if len(mis_recibos) > 0:
+        ctk.CTkButton(
+            action_frame,
+            text="💰 Pagar Ahora",
+            command=lambda: mostrar_contenido_cliente(app, "pagos"),
+            width=200,
+            height=50,
+            font=ctk.CTkFont(size=14, weight="bold"),
+            fg_color="#c41e3a",
+            text_color="#ffffff",
+            hover_color="#a01830",
+            corner_radius=10
+        ).pack(side="left")
+
+
+def contenido_reservar(app: Any):
+    """Formulario para crear nueva reserva"""
+    # Título
+    ctk.CTkLabel(
+        app.content_frame,
+        text="📅 Nueva Reserva",
+        font=ctk.CTkFont(size=28, weight="bold"),
+        text_color="#00d4ff"
+    ).pack(pady=(0, 30))
+
+    # Frame del formulario
+    form_frame = ctk.CTkFrame(
+        app.content_frame,
+        fg_color="#1a1f3a",
+        corner_radius=15,
+        border_width=2,
+        border_color="#00d4ff"
+    )
+    form_frame.pack(pady=20, padx=0, fill="x")
+
+    inner_frame = ctk.CTkFrame(form_frame, fg_color="transparent")
+    inner_frame.pack(pady=30, padx=30, fill="x")
+
+    # Helper para crear campos etiquetados
+    def create_labeled_combo(parent, label, values):
+        label_widget = ctk.CTkLabel(
+            parent,
+            text=label,
+            font=ctk.CTkFont(size=12, weight="bold"),
+            text_color="#b0b8c1"
+        )
+        label_widget.pack(anchor="w", pady=(0, 8))
+
+        combo = ctk.CTkComboBox(
+            parent,
+            values=values,
+            width=400,
+            height=40,
+            font=ctk.CTkFont(size=13),
+            fg_color="#0f1428",
+            border_color="#00d4ff",
+            border_width=1.5,
+            text_color="#ffffff"
+        )
+        combo.pack(pady=(0, 20), fill="x")
+        return combo
+
+    # Aparato
+    aparatos = app.controller.obtener_aparatos()
+    aparato_names = [f"{a['nombre']} - {a['tipo']}" for a in aparatos]
+    aparato_combo = create_labeled_combo(inner_frame, "🏋️ Aparato", aparato_names)
+
+    # Día
+    dia_combo = create_labeled_combo(
+        inner_frame,
+        "📅 Día de la Semana",
+        ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']
+    )
+
+    # Hora
+    horarios = app.controller.generar_horarios_disponibles()
+    hora_combo = create_labeled_combo(inner_frame, "⏰ Hora de Inicio", horarios)
+
+    # Botón reservar
+    def hacer_reserva():
+        if not aparato_combo.get() or not dia_combo.get() or not hora_combo.get():
+            messagebox.showerror("Error", "Complete todos los campos")
+            return
+
+        if aparato_combo.get() not in aparato_names:
+            messagebox.showerror("Error", "Seleccione un aparato válido")
+            return
+
+        idx = aparato_names.index(aparato_combo.get())
+        id_aparato = aparatos[idx]['id']
+
+        exito, mensaje = app.controller.crear_reserva(
+            id_aparato,
+            dia_combo.get(),
+            hora_combo.get()
+        )
+
+        if exito:
+            messagebox.showinfo("¡Éxito!", "Reserva solicitada correctamente")
+            mostrar_contenido_cliente(app, "mis_reservas")
+        else:
+            messagebox.showerror("Error", mensaje)
+
+    ctk.CTkButton(
+        inner_frame,
+        text="✅ Solicitar Reserva",
+        command=hacer_reserva,
+        width=400,
+        height=50,
+        font=ctk.CTkFont(size=14, weight="bold"),
+        fg_color="#00d4ff",
+        text_color="#0a0e27",
+        hover_color="#00b8d4",
+        corner_radius=10
+    ).pack(pady=(10, 0))
+
+
+def contenido_mis_reservas(app: Any):
+    """Muestra las reservas del cliente"""
+    ctk.CTkLabel(
+        app.content_frame,
+        text="📋 Mis Reservas",
+        font=ctk.CTkFont(size=28, weight="bold"),
+        text_color="#00d4ff"
+    ).pack(pady=(0, 20))
+
+    reservas = app.controller.obtener_mis_reservas()
+
+    if not reservas:
+        ctk.CTkLabel(
+            app.content_frame,
+            text="No tienes reservas activas",
+            font=ctk.CTkFont(size=16),
+            text_color="#7a8492"
+        ).pack(pady=40)
+        return
+
+    scroll_frame = ctk.CTkScrollableFrame(app.content_frame, fg_color="transparent")
+    scroll_frame.pack(fill="both", expand=True, padx=0, pady=0)
+
+    for reserva in reservas:
+        estado = reserva.get('estado', 'pendiente')
+        
+        if estado == 'pendiente':
+            estado_color = "#ff9800"
+            estado_icon = "⏳"
+            border_color = "#ff9800"
+        elif estado == 'aceptada':
+            estado_color = "#2dbe60"
+            estado_icon = "✅"
+            border_color = "#2dbe60"
+        else:
+            estado_color = "#c41e3a"
+            estado_icon = "❌"
+            border_color = "#c41e3a"
+
+        card = ctk.CTkFrame(
+            scroll_frame,
+            fg_color="#1a1f3a",
+            corner_radius=12,
+            border_width=2,
+            border_color=border_color
+        )
+        card.pack(fill="x", pady=10, padx=0)
+
+        # Contenido de la tarjeta
+        content_frame = ctk.CTkFrame(card, fg_color="transparent")
+        content_frame.pack(fill="both", expand=True, padx=20, pady=15)
+
+        info_text = f"🏋️ {reserva['aparato']} ({reserva['tipo']})"
+        ctk.CTkLabel(
+            content_frame,
+            text=info_text,
+            font=ctk.CTkFont(size=13, weight="bold"),
+            text_color="#ffffff"
+        ).pack(anchor="w")
+
+        details_text = f"📅 {reserva['dia']} | ⏰ {reserva['hora_inicio']} - {reserva['hora_fin']}"
+        ctk.CTkLabel(
+            content_frame,
+            text=details_text,
+            font=ctk.CTkFont(size=11),
+            text_color="#7a8492"
+        ).pack(anchor="w", pady=(5, 0))
+
+        # Estado y botones
+        button_frame = ctk.CTkFrame(card, fg_color="transparent")
+        button_frame.pack(fill="x", padx=20, pady=(10, 0))
+
+        ctk.CTkLabel(
+            button_frame,
+            text=f"{estado_icon} {estado.upper()}",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color=estado_color
+        ).pack(side="left")
+
+        if estado == 'pendiente':
+            ctk.CTkButton(
+                button_frame,
+                text="❌ Cancelar",
+                command=lambda r=reserva: cancelar_reserva(app, r['id']),
+                width=100,
+                height=35,
+                font=ctk.CTkFont(size=11),
+                fg_color="#c41e3a",
+                hover_color="#a01830",
+                corner_radius=8
+            ).pack(side="right")
+
+
+def contenido_notificaciones(app: Any):
+    """Muestra las notificaciones del cliente"""
+    ctk.CTkLabel(
+        app.content_frame,
+        text="🔔 Notificaciones",
+        font=ctk.CTkFont(size=28, weight="bold"),
+        text_color="#00d4ff"
+    ).pack(pady=(0, 20))
+
+    notificaciones = app.controller.obtener_mis_notificaciones()
+
+    if not notificaciones:
+        ctk.CTkLabel(
+            app.content_frame,
+            text="No tienes notificaciones",
+            font=ctk.CTkFont(size=16),
+            text_color="#7a8492"
+        ).pack(pady=40)
+        return
+
+    scroll_frame = ctk.CTkScrollableFrame(app.content_frame, fg_color="transparent")
+    scroll_frame.pack(fill="both", expand=True, padx=0, pady=0)
+
+    for notif in notificaciones:
+        if notif['tipo'] == 'aceptada':
+            tipo_icon = "✅"
+            tipo_color = "#2dbe60"
+            border_color = "#2dbe60"
+        else:
+            tipo_icon = "❌"
+            tipo_color = "#c41e3a"
+            border_color = "#c41e3a"
+
+        card = ctk.CTkFrame(
+            scroll_frame,
+            fg_color="#1a1f3a",
+            corner_radius=12,
+            border_width=2,
+            border_color=border_color
+        )
+        card.pack(fill="x", pady=10, padx=0)
+
+        # Contenido
+        content_frame = ctk.CTkFrame(card, fg_color="transparent")
+        content_frame.pack(fill="both", expand=True, padx=20, pady=15)
+
+        ctk.CTkLabel(
+            content_frame,
+            text=f"{tipo_icon} {notif['mensaje']}",
+            font=ctk.CTkFont(size=12),
+            text_color=tipo_color
+        ).pack(anchor="w")
+
+        # Botones de acción
+        button_frame = ctk.CTkFrame(card, fg_color="transparent")
+        button_frame.pack(fill="x", padx=20, pady=(10, 0))
+
+        if not notif.get('leida', False):
+            ctk.CTkButton(
+                button_frame,
+                text="✓ Aceptar",
+                command=lambda n=notif: aceptar_notificacion(app, n['id']),
+                width=90,
+                height=35,
+                font=ctk.CTkFont(size=11),
+                fg_color="#2dbe60",
+                hover_color="#229d47",
+                corner_radius=8
+            ).pack(side="left", padx=(0, 10))
+
+        if notif.get('tipo') == 'rechazada' and notif.get('id_reserva'):
+            ctk.CTkButton(
+                button_frame,
+                text="🗑️ Retirar",
+                command=lambda n=notif: retirar_reserva_desde_notificacion(app, n.get('id_reserva'), n.get('id')),
+                width=90,
+                height=35,
+                font=ctk.CTkFont(size=11),
+                fg_color="#c41e3a",
+                hover_color="#a01830",
+                corner_radius=8
+            ).pack(side="left", padx=(0, 10))
+
+        ctk.CTkButton(
+            button_frame,
+            text="Eliminar",
+            command=lambda n=notif: eliminar_notificacion_ui(app, n.get('id')),
+            width=80,
+            height=35,
+            font=ctk.CTkFont(size=11),
+            fg_color="#555555",
+            hover_color="#444444",
+            corner_radius=8
+        ).pack(side="left")
+
+
+def aceptar_notificacion(app: Any, id_notificacion: int):
+    exito, mensaje = app.controller.marcar_notificacion_leida(id_notificacion)
+    if exito:
+        messagebox.showinfo("Éxito", "Notificación marcada como leída")
+        mostrar_contenido_cliente(app, "notificaciones")
+    else:
+        messagebox.showerror("Error", mensaje)
+
+
+def cancelar_reserva(app: Any, id_reserva: int):
+    if messagebox.askyesno("Confirmar", "¿Desea cancelar esta reserva?"):
+        exito, mensaje = app.controller.eliminar_reserva(id_reserva)
+        if exito:
+            messagebox.showinfo("Éxito", mensaje)
+            mostrar_contenido_cliente(app, "mis_reservas")
+        else:
+            messagebox.showerror("Error", mensaje)
+
+
+def eliminar_notificacion_ui(app: Any, id_notificacion: int):
+    if not id_notificacion:
+        messagebox.showerror("Error", "ID de notificación inválido")
+        return
+
+    if messagebox.askyesno("Confirmar", "¿Desea eliminar esta notificación?"):
+        exito, mensaje = app.controller.eliminar_notificacion(id_notificacion)
+        if exito:
+            messagebox.showinfo("Éxito", mensaje)
+            mostrar_contenido_cliente(app, "notificaciones")
+        else:
+            messagebox.showerror("Error", mensaje)
+
+
+def retirar_reserva_desde_notificacion(app: Any, id_reserva: int, id_notificacion: int):
+    if not id_reserva:
+        messagebox.showerror("Error", "ID de reserva inválido")
+        return
+
+    if messagebox.askyesno("Confirmar", "¿Desea retirar esta reserva?"):
+        exito, mensaje = app.controller.eliminar_reserva(id_reserva)
+        if exito:
+            if id_notificacion:
+                app.controller.marcar_notificacion_leida(id_notificacion)
+            messagebox.showinfo("Éxito", "Reserva retirada")
+            mostrar_contenido_cliente(app, "notificaciones")
+        else:
+            messagebox.showerror("Error", mensaje)
+
+
+def contenido_pagos(app: Any):
+    """Muestra los recibos y gestión de pagos"""
+    ctk.CTkLabel(
+        app.content_frame,
+        text="💳 Mis Pagos",
+        font=ctk.CTkFont(size=28, weight="bold"),
+        text_color="#00d4ff"
+    ).pack(pady=(0, 20))
+
+    recibos = app.controller.obtener_mis_recibos()
+
+    if not recibos:
+        ctk.CTkLabel(
+            app.content_frame,
+            text="No hay recibos disponibles",
+            font=ctk.CTkFont(size=16),
+            text_color="#7a8492"
+        ).pack(pady=40)
+        return
+
+    scroll_frame = ctk.CTkScrollableFrame(app.content_frame, fg_color="transparent")
+    scroll_frame.pack(fill="both", expand=True, padx=0, pady=0)
+
+    for recibo in recibos:
+        mes_nombre = app.controller.obtener_nombre_mes(recibo['mes'])
+        
+        border_color = "#c41e3a" if recibo['estado'] == 'pendiente' else "#2dbe60"
+
+        card = ctk.CTkFrame(
+            scroll_frame,
+            fg_color="#1a1f3a",
+            corner_radius=12,
+            border_width=2,
+            border_color=border_color
+        )
+        card.pack(fill="x", pady=10, padx=0)
+
+        content_frame = ctk.CTkFrame(card, fg_color="transparent")
+        content_frame.pack(fill="both", expand=True, padx=20, pady=15)
+
+        titulo = f"📄 {mes_nombre} {recibo['anio']}"
+        ctk.CTkLabel(
+            content_frame,
+            text=titulo,
+            font=ctk.CTkFont(size=13, weight="bold"),
+            text_color="#ffffff"
+        ).pack(anchor="w")
+
+        monto = f"💰 Monto: €{recibo['monto']:.2f}"
+        ctk.CTkLabel(
+            content_frame,
+            text=monto,
+            font=ctk.CTkFont(size=11),
+            text_color="#7a8492"
+        ).pack(anchor="w", pady=(5, 0))
+
+        button_frame = ctk.CTkFrame(card, fg_color="transparent")
+        button_frame.pack(fill="x", padx=20, pady=(10, 0))
+
+        if recibo['estado'] == 'pendiente':
+            ctk.CTkButton(
+                button_frame,
+                text="💰 Pagar",
+                command=lambda r=recibo: pagar_recibo(app, r['id']),
+                width=100,
+                height=35,
+                font=ctk.CTkFont(size=11),
+                fg_color="#c41e3a",
+                hover_color="#a01830",
+                corner_radius=8
+            ).pack(side="left")
+        else:
+            ctk.CTkLabel(
+                button_frame,
+                text="✅ PAGADO",
+                font=ctk.CTkFont(size=11, weight="bold"),
+                text_color="#2dbe60"
+            ).pack(side="left")
+
+
+def pagar_recibo(app: Any, id_recibo: int):
+    if messagebox.askyesno("Confirmar Pago", "¿Desea confirmar el pago?"):
+        exito, mensaje = app.controller.pagar_recibo(id_recibo)
+        if exito:
+            messagebox.showinfo("Éxito", "Pago procesado correctamente")
+            mostrar_contenido_cliente(app, "pagos")
+        else:
+            messagebox.showerror("Error", mensaje)
+
+
+def contenido_horarios(app: Any):
+    """Muestra la ocupación del gimnasio por día"""
+    ctk.CTkLabel(
+        app.content_frame,
+        text="🕐 Horarios Ocupados",
+        font=ctk.CTkFont(size=28, weight="bold"),
+        text_color="#00d4ff"
+    ).pack(pady=(0, 20))
+
+    # Selector de día
+    selector_frame = ctk.CTkFrame(
+        app.content_frame,
+        fg_color="#1a1f3a",
+        corner_radius=12,
+        border_width=2,
+        border_color="#00d4ff"
+    )
+    selector_frame.pack(fill="x", pady=(0, 20))
+
+    inner_selector = ctk.CTkFrame(selector_frame, fg_color="transparent")
+    inner_selector.pack(pady=15, padx=20, fill="x")
+
+    ctk.CTkLabel(
+        inner_selector,
+        text="📅 Día:",
+        font=ctk.CTkFont(size=12, weight="bold"),
+        text_color="#b0b8c1"
+    ).pack(side="left", padx=(0, 10))
+
+    dia_var = ctk.StringVar(value="Lunes")
+    dia_combo = ctk.CTkComboBox(
+        inner_selector,
+        values=['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'],
+        variable=dia_var,
+        width=200,
+        height=40,
+        font=ctk.CTkFont(size=12),
+        fg_color="#0f1428",
+        border_color="#00d4ff",
+        border_width=1.5
+    )
+    dia_combo.pack(side="left", padx=(0, 15))
+
+    # Frame para mostrar ocupación
+    ocupacion_frame = ctk.CTkScrollableFrame(app.content_frame, fg_color="transparent")
+    ocupacion_frame.pack(fill="both", expand=True, padx=0, pady=0)
+
+    def mostrar_ocupacion():
+        for widget in ocupacion_frame.winfo_children():
+            widget.destroy()
+
+        ocupacion = app.controller.obtener_ocupacion_dia(dia_var.get())
+
+        if not ocupacion:
+            ctk.CTkLabel(
+                ocupacion_frame,
+                text="No hay reservas para este día",
+                font=ctk.CTkFont(size=16),
+                text_color="#7a8492"
+            ).pack(pady=40)
+            return
+
+        for ocu in ocupacion:
+            card = ctk.CTkFrame(
+                ocupacion_frame,
+                fg_color="#1a1f3a",
+                corner_radius=12,
+                border_width=1,
+                border_color="#2a2f4a"
+            )
+            card.pack(fill="x", pady=10, padx=0)
+
+            content = ctk.CTkFrame(card, fg_color="transparent")
+            content.pack(fill="both", expand=True, padx=20, pady=15)
+
+            titulo = f"🏋️ {ocu['aparato']} ({ocu['tipo']})"
+            ctk.CTkLabel(
+                content,
+                text=titulo,
+                font=ctk.CTkFont(size=12, weight="bold"),
+                text_color="#ffffff"
+            ).pack(anchor="w")
+
+            detalles = f"⏰ {ocu['hora_inicio']} - {ocu['hora_fin']} | 👤 {ocu['cliente']}"
+            ctk.CTkLabel(
+                content,
+                text=detalles,
+                font=ctk.CTkFont(size=11),
+                text_color="#7a8492"
+            ).pack(anchor="w", pady=(5, 0))
+
+    ctk.CTkButton(
+        inner_selector,
+        text="🔍 Ver Ocupación",
+        command=mostrar_ocupacion,
+        width=150,
+        height=40,
+        font=ctk.CTkFont(size=12, weight="bold"),
+        fg_color="#00d4ff",
+        text_color="#0a0e27",
+        hover_color="#00b8d4",
+        corner_radius=8
+    ).pack(side="left")
+
+    mostrar_ocupacion()
+
 
 
 def mostrar_contenido_cliente(app: Any, seccion: str):
