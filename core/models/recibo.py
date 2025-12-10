@@ -97,6 +97,32 @@ class Recibo:
         except:
             return False
 
+    def crear(self, recibo_data: Dict) -> Optional[int]:
+        """Crea un nuevo recibo con los datos proporcionados."""
+        try:
+            conn = self.db.get_connection()
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                           INSERT INTO recibos (id_cliente, mes, anio, monto, estado)
+                           VALUES (?, ?, ?, ?, ?)
+                           ''', (
+                               recibo_data.get('id_cliente'),
+                               recibo_data.get('mes'),
+                               recibo_data.get('anio'),
+                               recibo_data.get('monto'),
+                               recibo_data.get('estado', 'pendiente')
+                           ))
+            
+            recibo_id = cursor.lastrowid
+            conn.commit()
+            conn.close()
+            
+            return recibo_id
+        except Exception as e:
+            logger.error(f"Error creating receipt: {str(e)}")
+            return None
+
     def registrar_pago(self, id_recibo: int, monto: float, metodo_pago: str = "Efectivo") -> bool:
         try:
             conn = self.db.get_connection()

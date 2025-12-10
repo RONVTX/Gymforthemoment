@@ -818,13 +818,29 @@ def admin_eliminar_reserva(app: Any, id_reserva: int):
 
 
 def contenido_admin_recibos(app: Any):
-    """Gestión de recibos"""
+    """Gestión de recibos con opción de crear facturas"""
+    header = ctk.CTkFrame(app.content_frame, fg_color="transparent")
+    header.pack(fill="x", pady=(0, 20))
+
     ctk.CTkLabel(
-        app.content_frame,
+        header,
         text="📄 Todos los Recibos",
         font=ctk.CTkFont(size=28, weight="bold"),
         text_color="#00d4ff"
-    ).pack(pady=(0, 20))
+    ).pack(side="left")
+
+    ctk.CTkButton(
+        header,
+        text="➕ Crear Factura",
+        command=lambda: crear_factura_dialog(app),
+        width=180,
+        height=45,
+        font=ctk.CTkFont(size=12, weight="bold"),
+        fg_color="#00d4ff",
+        text_color="#0a0e27",
+        hover_color="#00b8d4",
+        corner_radius=10
+    ).pack(side="right")
 
     scroll_frame = ctk.CTkScrollableFrame(app.content_frame, fg_color="transparent")
     scroll_frame.pack(fill="both", expand=True, padx=0, pady=0)
@@ -887,7 +903,7 @@ def contenido_admin_recibos(app: Any):
                 fg_color="#2dbe60",
                 hover_color="#229d47",
                 corner_radius=8
-            ).pack(side="left")
+            ).pack(side="left", padx=(0, 10))
         else:
             ctk.CTkLabel(
                 button_frame,
@@ -895,6 +911,219 @@ def contenido_admin_recibos(app: Any):
                 font=ctk.CTkFont(size=11, weight="bold"),
                 text_color="#2dbe60"
             ).pack(side="left")
+
+        # Botón para descargar/ver factura
+        ctk.CTkButton(
+            button_frame,
+            text="📥 Descargar",
+            command=lambda r=recibo: descargar_factura(app, r['id']),
+            width=100,
+            height=35,
+            font=ctk.CTkFont(size=11),
+            fg_color="#ffd700",
+            text_color="#0a0e27",
+            hover_color="#ffed4e",
+            corner_radius=8
+        ).pack(side="right")
+
+
+def crear_factura_dialog(app: Any):
+    """Diálogo para crear una nueva factura manual para un cliente"""
+    dialog = ctk.CTkToplevel(app)
+    dialog.title("Crear Factura")
+    dialog.geometry("550x750")
+    dialog.configure(fg_color="#0a0e27")
+    dialog.transient(app)
+    dialog.grab_set()
+
+    ctk.CTkLabel(
+        dialog,
+        text="📄 Crear Nueva Factura",
+        font=ctk.CTkFont(size=22, weight="bold"),
+        text_color="#00d4ff"
+    ).pack(pady=20)
+
+    scroll_frame = ctk.CTkScrollableFrame(dialog, fg_color="transparent")
+    scroll_frame.pack(fill="both", expand=True, padx=30, pady=0)
+
+    def create_labeled_entry(parent, label, placeholder, is_number=False):
+        label_widget = ctk.CTkLabel(
+            parent,
+            text=label,
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#b0b8c1"
+        )
+        label_widget.pack(anchor="w", pady=(0, 4))
+
+        entry = ctk.CTkEntry(
+            parent,
+            placeholder_text=placeholder,
+            width=400,
+            height=40,
+            font=ctk.CTkFont(size=12),
+            fg_color="#1a1f3a",
+            border_color="#00d4ff",
+            border_width=1.5,
+            text_color="#ffffff",
+            placeholder_text_color="#5a6270"
+        )
+        entry.pack(pady=(0, 15), fill="x")
+        return entry
+
+    def create_labeled_combo(parent, label, values):
+        label_widget = ctk.CTkLabel(
+            parent,
+            text=label,
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#b0b8c1"
+        )
+        label_widget.pack(anchor="w", pady=(0, 4))
+
+        combo = ctk.CTkComboBox(
+            parent,
+            values=values,
+            width=400,
+            height=40,
+            font=ctk.CTkFont(size=12),
+            fg_color="#1a1f3a",
+            border_color="#00d4ff",
+            border_width=1.5,
+            text_color="#ffffff"
+        )
+        combo.pack(pady=(0, 15), fill="x")
+        return combo
+
+    # Cliente
+    clientes = app.controller.obtener_clientes()
+    cliente_options = [f"{c['nombre']} {c['apellido']} (DNI: {c['dni']})" for c in clientes]
+    cliente_combo = create_labeled_combo(scroll_frame, "👤 Cliente *", cliente_options)
+
+    # Concepto
+    concepto = create_labeled_entry(scroll_frame, "📋 Concepto de la Factura *", "Ej: Cuota Mensual Gimnasio")
+
+    # Monto
+    monto = create_labeled_entry(scroll_frame, "💰 Monto (€) *", "Ej: 50.00")
+
+    # Mes
+    mes_combo = create_labeled_combo(
+        scroll_frame,
+        "📅 Mes *",
+        [str(i) for i in range(1, 13)]
+    )
+    mes_combo.set(str(datetime.now().month))
+
+    # Año
+    anio_combo = create_labeled_combo(
+        scroll_frame,
+        "📆 Año *",
+        [str(i) for i in range(2024, 2027)]
+    )
+    anio_combo.set(str(datetime.now().year))
+
+    # Descripción
+    desc_label = ctk.CTkLabel(
+        scroll_frame,
+        text="📝 Descripción (Opcional)",
+        font=ctk.CTkFont(size=11, weight="bold"),
+        text_color="#b0b8c1"
+    )
+    desc_label.pack(anchor="w", pady=(0, 4))
+
+    descripcion = ctk.CTkTextbox(
+        scroll_frame,
+        width=400,
+        height=100,
+        font=ctk.CTkFont(size=11),
+        fg_color="#1a1f3a",
+        border_color="#00d4ff",
+        border_width=1.5,
+        text_color="#ffffff"
+    )
+    descripcion.pack(pady=(0, 20), fill="both")
+
+    # Frame para botones
+    button_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+    button_frame.pack(pady=20, padx=30, fill="x")
+
+    def crear():
+        if not cliente_combo.get() or not concepto.get() or not monto.get():
+            messagebox.showerror("Error", "Complete los campos requeridos (*)")
+            return
+
+        try:
+            # Validar que el monto sea un número válido
+            monto_float = float(monto.get())
+            if monto_float <= 0:
+                messagebox.showerror("Error", "El monto debe ser mayor a 0")
+                return
+
+            # Extraer índice del cliente
+            cliente_idx = cliente_options.index(cliente_combo.get())
+            id_cliente = clientes[cliente_idx]['id']
+
+            # Crear recibo
+            mes = int(mes_combo.get())
+            anio = int(anio_combo.get())
+            desc = descripcion.get("1.0", "end").strip()
+
+            exito, mensaje = app.controller.crear_recibo_manual(
+                id_cliente=id_cliente,
+                concepto=concepto.get(),
+                monto=monto_float,
+                mes=mes,
+                anio=anio,
+                descripcion=desc
+            )
+
+            if exito:
+                messagebox.showinfo("¡Éxito!", "Factura creada correctamente")
+                dialog.destroy()
+                mostrar_contenido_admin(app, "recibos")
+            else:
+                messagebox.showerror("Error", mensaje)
+
+        except ValueError:
+            messagebox.showerror("Error", "El monto debe ser un número válido")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al crear factura: {str(e)}")
+
+    ctk.CTkButton(
+        button_frame,
+        text="✅ Crear Factura",
+        command=crear,
+        width=200,
+        height=45,
+        font=ctk.CTkFont(size=14, weight="bold"),
+        fg_color="#00d4ff",
+        text_color="#0a0e27",
+        hover_color="#00b8d4",
+        corner_radius=10
+    ).pack(side="left", padx=(0, 10))
+
+    ctk.CTkButton(
+        button_frame,
+        text="❌ Cancelar",
+        command=dialog.destroy,
+        width=150,
+        height=45,
+        font=ctk.CTkFont(size=14),
+        fg_color="#555555",
+        hover_color="#444444",
+        corner_radius=10
+    ).pack(side="left")
+
+
+def descargar_factura(app: Any, id_recibo: int):
+    """Descarga o abre la factura en PDF"""
+    try:
+        exito, ruta = app.controller.generar_pdf_factura(id_recibo)
+        if exito:
+            messagebox.showinfo("Éxito", f"Factura generada: {ruta}")
+        else:
+            messagebox.showwarning("Advertencia", "No se pudo generar la factura PDF")
+    except Exception as e:
+        messagebox.showerror("Error", f"Error al descargar factura: {str(e)}")
+
 
 
 def contenido_admin_morosos(app: Any):
@@ -1610,63 +1839,6 @@ def admin_eliminar_reserva(app: Any, id_reserva: int):
             mostrar_contenido_admin(app, "reservas")
         else:
             messagebox.showerror("Error", mensaje)
-
-
-def contenido_admin_recibos(app: Any):
-    ctk.CTkLabel(
-        app.content_frame,
-        text="📄 Todos los Recibos",
-        font=ctk.CTkFont(size=28, weight="bold")
-    ).pack(pady=20)
-
-    scroll_frame = ctk.CTkScrollableFrame(app.content_frame)
-    scroll_frame.pack(fill="both", expand=True, padx=20, pady=10)
-
-    recibos = app.controller.obtener_todos_recibos()
-
-    if not recibos:
-        ctk.CTkLabel(
-            scroll_frame,
-            text="No hay recibos en el sistema",
-            font=ctk.CTkFont(size=16),
-            text_color="gray"
-        ).pack(pady=40)
-        return
-
-    for recibo in recibos:
-        card = ctk.CTkFrame(scroll_frame)
-        card.pack(fill="x", pady=5, padx=10)
-
-        mes_nombre = app.controller.obtener_nombre_mes(recibo['mes'])
-        estado_color = "green" if recibo['estado'] == 'pagado' else "orange"
-
-        info_text = f"👤 {recibo['cliente']} | 📄 {mes_nombre} {recibo['anio']}\n" \
-                    f"💰 €{recibo['monto']:.2f} | Estado: {recibo['estado'].upper()}"
-
-        ctk.CTkLabel(
-            card,
-            text=info_text,
-            font=ctk.CTkFont(size=13),
-            justify="left"
-        ).pack(side="left", pady=15, padx=20)
-
-        # Botón para pagar si está pendiente
-        if recibo['estado'] == 'pendiente':
-            ctk.CTkButton(
-                card,
-                text="✅ Pagar",
-                command=lambda r=recibo: pagar_recibo_admin(app, r['id']),
-                width=80,
-                fg_color="green",
-                hover_color="darkgreen"
-            ).pack(side="right", pady=10, padx=10)
-        else:
-            ctk.CTkLabel(
-                card,
-                text="●",
-                font=ctk.CTkFont(size=30),
-                text_color=estado_color
-            ).pack(side="right", padx=20)
 
 
 def contenido_admin_morosos(app: Any):

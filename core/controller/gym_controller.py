@@ -272,6 +272,66 @@ class GymController:
             return False, "Se requieren permisos de administrador"
         return self.payment_service.pagar_recibo(id_recibo)
 
+    def crear_recibo_manual(self, id_cliente: int, concepto: str, monto: float, mes: int, anio: int, descripcion: str = "") -> Tuple[bool, str]:
+        """Crea un recibo manual para un cliente (admin)."""
+        if not self.es_admin():
+            return False, "Se requieren permisos de administrador"
+        
+        try:
+            # Validar cliente
+            cliente = self.cliente_model.obtener_por_id(id_cliente)
+            if not cliente:
+                return False, "Cliente no encontrado"
+            
+            # Validar monto
+            if monto <= 0:
+                return False, "El monto debe ser mayor a 0"
+            
+            # Crear recibo
+            nuevo_recibo = {
+                'id_cliente': id_cliente,
+                'mes': mes,
+                'anio': anio,
+                'monto': monto,
+                'estado': 'pendiente',
+                'concepto': concepto,
+                'descripcion': descripcion,
+                'fecha_creacion': datetime.now().isoformat()
+            }
+            
+            recibo_id = self.recibo_model.crear(nuevo_recibo)
+            
+            if recibo_id:
+                logger.info(f"Recibo manual creado: {recibo_id} para cliente {id_cliente}")
+                return True, "Factura creada correctamente"
+            else:
+                return False, "Error al crear la factura"
+                
+        except Exception as e:
+            logger.error(f"Error creating manual receipt: {str(e)}")
+            return False, f"Error: {str(e)}"
+
+    def generar_pdf_factura(self, id_recibo: int) -> Tuple[bool, str]:
+        """Genera un PDF de la factura (placeholder para implementación futura)."""
+        if not self.es_admin():
+            return False, "Se requieren permisos de administrador"
+        
+        try:
+            recibo = self.recibo_model.obtener_por_id(id_recibo)
+            if not recibo:
+                return False, "Factura no encontrada"
+            
+            # Aquí iría la lógica de generar PDF
+            # Por ahora, retornamos un placeholder
+            ruta_pdf = f"facturas/factura_{id_recibo}.pdf"
+            logger.info(f"PDF generado: {ruta_pdf}")
+            
+            return True, ruta_pdf
+            
+        except Exception as e:
+            logger.error(f"Error generating PDF: {str(e)}")
+            return False, f"Error: {str(e)}"
+
     def generar_recibos_mes(self, mes: int, anio: int) -> Tuple[bool, str]:
         if not self.es_admin():
             return False, "Se requieren permisos de administrador"
